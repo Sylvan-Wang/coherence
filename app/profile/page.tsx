@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 
 type UserProfile = {
@@ -33,13 +33,13 @@ type MemoryStats = {
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [stats, setStats] = useState<MemoryStats | null>(null)
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('coherence_theme') !== 'light'
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('coherence_theme')
-    if (savedTheme === 'light') setDark(false)
-
     const userId = localStorage.getItem('coherence_user_id')
     if (!userId || userId === 'undefined') { setLoading(false); return }
 
@@ -66,10 +66,11 @@ export default function ProfilePage() {
   const surface = dark ? '#181818' : '#f7f7f7'
   const accent = dark ? '#6b6b6b' : '#999999'
 
-  const daysSince = (dateStr: string) => {
+  const now = useMemo(() => Date.now(), [])
+  const daysSince = useCallback((dateStr: string) => {
     if (!dateStr) return 0
-    return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
-  }
+    return Math.floor((now - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+  }, [now])
 
   return (
     <>

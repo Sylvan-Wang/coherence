@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 
 type Message = {
@@ -15,14 +15,14 @@ export default function ChatPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [initialized, setInitialized] = useState(false)
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('coherence_theme') !== 'light'
+  })
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('coherence_theme')
-    if (savedTheme === 'light') setDark(false)
-
     const init = async () => {
       const storedUserId = localStorage.getItem('coherence_user_id')
       const validId = storedUserId && storedUserId !== 'undefined' && storedUserId !== 'null'
@@ -42,7 +42,7 @@ export default function ChatPage() {
       }
     }
     init()
-  }, [])
+  }, [streamAIGreeting])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -54,7 +54,7 @@ export default function ChatPage() {
     localStorage.setItem('coherence_theme', next ? 'dark' : 'light')
   }
 
-  const streamAIGreeting = async (uid: string, sid: string, history: Message[]) => {
+  const streamAIGreeting = useCallback(async (uid: string, sid: string, history: Message[]) => {
     setLoading(true)
     const assistantMsg: Message = { role: 'assistant', content: '' }
     setMessages(prev => [...prev, assistantMsg])
@@ -71,9 +71,9 @@ export default function ChatPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [readStream])
 
-  const readStream = async (body: ReadableStream) => {
+  const readStream = useCallback(async (body: ReadableStream) => {
     const reader = body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
@@ -97,7 +97,7 @@ export default function ChatPage() {
         } catch {}
       }
     }
-  }
+  }, [])
 
   const sendMessage = async () => {
     if (!input.trim() || loading || !userId || !sessionId) return
