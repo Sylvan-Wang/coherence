@@ -54,25 +54,6 @@ export default function ChatPage() {
     localStorage.setItem('coherence_theme', next ? 'dark' : 'light')
   }
 
-  const streamAIGreeting = useCallback(async (uid: string, sid: string, history: Message[]) => {
-    setLoading(true)
-    const assistantMsg: Message = { role: 'assistant', content: '' }
-    setMessages(prev => [...prev, assistantMsg])
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: uid, session_id: sid,
-          messages: history.length > 0 ? history : [{ role: 'user', content: '（开始对话）' }],
-        }),
-      })
-      if (res.body) await readStream(res.body)
-    } finally {
-      setLoading(false)
-    }
-  }, [readStream])
-
   const readStream = useCallback(async (body: ReadableStream) => {
     const reader = body.getReader()
     const decoder = new TextDecoder()
@@ -98,6 +79,25 @@ export default function ChatPage() {
       }
     }
   }, [])
+
+  const streamAIGreeting = useCallback(async (uid: string, sid: string, history: Message[]) => {
+    setLoading(true)
+    const assistantMsg: Message = { role: 'assistant', content: '' }
+    setMessages(prev => [...prev, assistantMsg])
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: uid, session_id: sid,
+          messages: history.length > 0 ? history : [{ role: 'user', content: '（开始对话）' }],
+        }),
+      })
+      if (res.body) await readStream(res.body)
+    } finally {
+      setLoading(false)
+    }
+  }, [readStream])
 
   const sendMessage = async () => {
     if (!input.trim() || loading || !userId || !sessionId) return
