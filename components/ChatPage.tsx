@@ -9,9 +9,36 @@ type Message = {
   content: string
 }
 
-function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void }) {
+type SessionItem = {
+  id: string
+  started_at: string
+  session_type: string | null
+  session_summary: string | null
+  emotional_arc: string | null
+}
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+  if (diffDays === 0) return '今天'
+  if (diffDays === 1) return '昨天'
+  if (diffDays < 7) return `${diffDays} 天前`
+  return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+}
+
+function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: () => void; userId: string | null }) {
   const pathname = usePathname()
+  const [sessions, setSessions] = useState<SessionItem[]>([])
   const border = dark ? '#1e1e1e' : '#ebebeb'
+
+  useEffect(() => {
+    if (!userId) return
+    fetch(`/api/sessions?user_id=${userId}`)
+      .then(r => r.json())
+      .then(d => setSessions(d.sessions ?? []))
+      .catch(() => {})
+  }, [userId])
   const bg = dark ? '#0d0d0d' : '#fafafa'
   const textMuted = dark ? '#404040' : '#bbb'
   const textActive = dark ? '#e8e3d9' : '#111'
@@ -60,21 +87,56 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
       </div>
 
       {/* Nav */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflow: 'hidden' }}>
         {navItem('/', '对话', '○')}
-        {navItem('/profile', '我的', '◇')}
-      </div>
 
-      {/* Bottom */}
-      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+        {/* Session 时间轴 */}
+        {sessions.length > 0 && (
+          <div style={{ marginTop: 8, overflow: 'hidden' }}>
+            <div style={{ fontSize: 10, color: dark ? '#2a2a2a' : '#ccc', letterSpacing: '0.1em', padding: '0 12px 6px' }}>
+              历史
+            </div>
+            <div style={{ overflowY: 'auto', maxHeight: 280 }}>
+              {sessions.map((s, i) => (
+                <div key={s.id} style={{
+                  padding: '6px 12px',
+                  borderRadius: 6,
+                  marginBottom: 1,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: dark ? '#333' : '#ccc', letterSpacing: '0.04em' }}>
+                      {i === 0 ? '本次' : formatDate(s.started_at)}
+                    </span>
+                    {s.session_type === 'first_meeting' && (
+                      <span style={{ fontSize: 9, color: dark ? '#2a2a2a' : '#ddd', letterSpacing: '0.06em' }}>初遇</span>
+                    )}
+                  </div>
+                  {s.session_summary && (
+                    <div style={{
+                      fontSize: 11, color: dark ? '#2e2e2e' : '#bbb',
+                      marginTop: 2, lineHeight: 1.5,
+                      letterSpacing: '0.03em',
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    } as React.CSSProperties}>
+                      {s.session_summary}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button onClick={toggleTheme} style={{
           display: 'flex', alignItems: 'center', gap: 10,
           width: '100%', padding: '8px 12px', borderRadius: 8,
           background: 'none', border: 'none',
           color: textMuted, fontSize: 13,
           letterSpacing: '0.04em', cursor: 'pointer',
-          fontFamily: 'inherit',
-          transition: 'all 0.15s',
+          fontFamily: 'inherit', transition: 'all 0.15s',
         }}
         onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = hoverBg}
         onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
@@ -82,6 +144,11 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
           <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>{dark ? '○' : '●'}</span>
           <span>{dark ? '日间' : '夜间'}</span>
         </button>
+      </div>
+
+      {/* Bottom — 我的 */}
+      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+        {navItem('/profile', '我的', '◇')}
       </div>
     </div>
   )
@@ -263,7 +330,7 @@ export default function ChatPage() {
       }}>
 
         {/* Sidebar */}
-        <Sidebar dark={dark} toggleTheme={toggleTheme} />
+        <Sidebar dark={dark} toggleTheme={toggleTheme} userId={userId} />
 
         {/* Main */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>

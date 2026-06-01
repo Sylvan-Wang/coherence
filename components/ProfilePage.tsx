@@ -50,9 +50,6 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
         {navItem('/', '对话', '○')}
-        {navItem('/profile', '我的', '◇')}
-      </div>
-      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
         <button onClick={toggleTheme} style={{
           display: 'flex', alignItems: 'center', gap: 10,
           width: '100%', padding: '8px 12px', borderRadius: 8,
@@ -66,6 +63,9 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
           <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>{dark ? '○' : '●'}</span>
           <span>{dark ? '日间' : '夜间'}</span>
         </button>
+      </div>
+      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+        {navItem('/profile', '我的', '◇')}
       </div>
     </div>
   )
