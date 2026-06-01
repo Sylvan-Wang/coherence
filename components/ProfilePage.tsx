@@ -2,6 +2,74 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void }) {
+  const pathname = usePathname()
+  const border = dark ? '#1e1e1e' : '#ebebeb'
+  const bg = dark ? '#0d0d0d' : '#fafafa'
+  const textMuted = dark ? '#404040' : '#bbb'
+  const textActive = dark ? '#e8e3d9' : '#111'
+  const hoverBg = dark ? '#161616' : '#f0f0f0'
+
+  const navItem = (href: string, label: string, icon: string) => {
+    const isActive = pathname === href
+    return (
+      <Link href={href} style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '8px 12px', borderRadius: 8,
+        textDecoration: 'none',
+        color: isActive ? textActive : textMuted,
+        background: isActive ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
+        fontSize: 13, letterSpacing: '0.04em',
+        fontFamily: 'inherit',
+        transition: 'all 0.15s',
+      }}
+      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = hoverBg }}
+      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      >
+        <span style={{ fontSize: 15, width: 18, textAlign: 'center' }}>{icon}</span>
+        <span>{label}</span>
+      </Link>
+    )
+  }
+
+  return (
+    <div style={{
+      width: 200, flexShrink: 0,
+      background: bg,
+      borderRight: `1px solid ${border}`,
+      display: 'flex', flexDirection: 'column',
+      padding: '20px 12px',
+      height: '100vh',
+      position: 'sticky', top: 0,
+    }}>
+      <div style={{ padding: '4px 12px 20px', borderBottom: `1px solid ${border}`, marginBottom: 12 }}>
+        <div style={{ fontSize: 14, letterSpacing: '0.12em', color: textActive, fontWeight: 400 }}>Coherence</div>
+        <div style={{ fontSize: 10, color: textMuted, marginTop: 3, letterSpacing: '0.06em' }}>连贯性，而非准确性</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+        {navItem('/', '对话', '○')}
+        {navItem('/profile', '我的', '◇')}
+      </div>
+      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+        <button onClick={toggleTheme} style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          width: '100%', padding: '8px 12px', borderRadius: 8,
+          background: 'none', border: 'none',
+          color: textMuted, fontSize: 13, letterSpacing: '0.04em',
+          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = hoverBg}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+        >
+          <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>{dark ? '○' : '●'}</span>
+          <span>{dark ? '日间' : '夜间'}</span>
+        </button>
+      </div>
+    </div>
+  )
+}
 
 type UserProfile = {
   id: string
@@ -75,50 +143,21 @@ export default function ProfilePage() {
     <>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { background: ${bg}; }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-        ::-webkit-scrollbar { width: 0; }
+        html, body { height: 100%; background: ${bg}; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: ${dark ? '#222' : '#ddd'}; border-radius: 2px; }
       `}</style>
 
       <div style={{
-        minHeight: '100dvh',
-        background: bg,
-        color: textPrimary,
+        display: 'flex', height: '100dvh',
+        background: bg, color: textPrimary,
         fontFamily: '"FangSong","仿宋","STFangSong","Times New Roman",Georgia,serif',
-        maxWidth: 820,
-        margin: '0 auto',
-        padding: '0 0 48px',
       }}>
+        <Sidebar dark={dark} toggleTheme={toggleTheme} />
 
-        {/* Header */}
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 10,
-          background: bg,
-          borderBottom: `1px solid ${border}`,
-          padding: '14px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <Link href="/" style={{
-            color: textSecondary, textDecoration: 'none',
-            fontSize: 13, letterSpacing: '0.05em',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            ← 返回
-          </Link>
-          <span style={{ fontSize: 14, letterSpacing: '0.08em', color: textPrimary }}>我的</span>
-          <button onClick={toggleTheme} style={{
-            background: 'none', border: `1px solid ${border}`,
-            color: textSecondary, borderRadius: 20,
-            padding: '4px 12px', fontSize: 11, cursor: 'pointer',
-            fontFamily: 'inherit',
-          }}>
-            {dark ? '☀' : '☾'}
-          </button>
-        </div>
-
-        <div style={{ padding: '32px 20px', animation: 'fadeIn 0.3s ease' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '48px 48px 64px' }}>
+          <div style={{ maxWidth: 600, animation: 'fadeIn 0.3s ease' }}>
 
           {loading && (
             <div style={{ textAlign: 'center', color: textMuted, marginTop: '40vh', letterSpacing: '0.3em' }}>
@@ -309,6 +348,7 @@ export default function ProfilePage() {
 
             </div>
           )}
+          </div>
         </div>
       </div>
     </>

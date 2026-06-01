@@ -2,10 +2,89 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
+}
+
+function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void }) {
+  const pathname = usePathname()
+  const border = dark ? '#1e1e1e' : '#ebebeb'
+  const bg = dark ? '#0d0d0d' : '#fafafa'
+  const textMuted = dark ? '#404040' : '#bbb'
+  const textActive = dark ? '#e8e3d9' : '#111'
+  const hoverBg = dark ? '#161616' : '#f0f0f0'
+
+  const navItem = (href: string, label: string, icon: string) => {
+    const isActive = pathname === href
+    return (
+      <Link href={href} style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '8px 12px', borderRadius: 8,
+        textDecoration: 'none',
+        color: isActive ? textActive : textMuted,
+        background: isActive ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
+        fontSize: 13, letterSpacing: '0.04em',
+        fontFamily: 'inherit',
+        transition: 'all 0.15s',
+      }}
+      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = hoverBg }}
+      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      >
+        <span style={{ fontSize: 15, width: 18, textAlign: 'center' }}>{icon}</span>
+        <span>{label}</span>
+      </Link>
+    )
+  }
+
+  return (
+    <div style={{
+      width: 200, flexShrink: 0,
+      background: bg,
+      borderRight: `1px solid ${border}`,
+      display: 'flex', flexDirection: 'column',
+      padding: '20px 12px',
+      height: '100vh',
+      position: 'sticky', top: 0,
+    }}>
+      {/* Logo */}
+      <div style={{ padding: '4px 12px 20px', borderBottom: `1px solid ${border}`, marginBottom: 12 }}>
+        <div style={{ fontSize: 14, letterSpacing: '0.12em', color: textActive, fontWeight: 400 }}>
+          Coherence
+        </div>
+        <div style={{ fontSize: 10, color: textMuted, marginTop: 3, letterSpacing: '0.06em' }}>
+          连贯性，而非准确性
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+        {navItem('/', '对话', '○')}
+        {navItem('/profile', '我的', '◇')}
+      </div>
+
+      {/* Bottom */}
+      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+        <button onClick={toggleTheme} style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          width: '100%', padding: '8px 12px', borderRadius: 8,
+          background: 'none', border: 'none',
+          color: textMuted, fontSize: 13,
+          letterSpacing: '0.04em', cursor: 'pointer',
+          fontFamily: 'inherit',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = hoverBg}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+        >
+          <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>{dark ? '○' : '●'}</span>
+          <span>{dark ? '日间' : '夜间'}</span>
+        </button>
+      </div>
+    </div>
+  )
 }
 
 export default function ChatPage() {
@@ -21,6 +100,12 @@ export default function ChatPage() {
   })
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const toggleTheme = () => {
+    const next = !dark
+    setDark(next)
+    localStorage.setItem('coherence_theme', next ? 'dark' : 'light')
+  }
 
   useEffect(() => {
     const readStreamInline = async (body: ReadableStream) => {
@@ -64,7 +149,6 @@ export default function ChatPage() {
         setUserId(data.user_id)
         setSessionId(data.session_id)
         setInitialized(true)
-        // 触发开场白
         setLoading(true)
         setMessages([{ role: 'assistant', content: '' }])
         try {
@@ -90,12 +174,6 @@ export default function ChatPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-
-  const toggleTheme = () => {
-    const next = !dark
-    setDark(next)
-    localStorage.setItem('coherence_theme', next ? 'dark' : 'light')
-  }
 
   const readStream = async (body: ReadableStream) => {
     const reader = body.getReader()
@@ -155,14 +233,14 @@ export default function ChatPage() {
   }
 
   const bg = dark ? '#111111' : '#ffffff'
-  const surface = dark ? '#1a1a1a' : '#f4f4f4'
-  const border = dark ? '#2a2a2a' : '#e0e0e0'
-  const textPrimary = dark ? '#f0ece4' : '#111111'
-  const textSecondary = dark ? '#888880' : '#666666'
-  const textMuted = dark ? '#404040' : '#bbbbbb'
-  const userBubble = dark ? '#1e1e1e' : '#f0f0f0'
-  const userText = dark ? '#c8c4bc' : '#333333'
-  const accent = dark ? '#6b6b6b' : '#999999'
+  const border = dark ? '#1e1e1e' : '#ebebeb'
+  const textPrimary = dark ? '#e8e3d9' : '#111111'
+  const textSecondary = dark ? '#888' : '#666'
+  const textMuted = dark ? '#333' : '#ccc'
+  const userBubble = dark ? '#181818' : '#f4f4f4'
+  const userText = dark ? '#b8b3ab' : '#333'
+  const accent = dark ? '#555' : '#aaa'
+  const inputBg = dark ? '#161616' : '#f7f7f7'
 
   return (
     <>
@@ -170,193 +248,168 @@ export default function ChatPage() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; background: ${bg}; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-        ::-webkit-scrollbar { width: 0; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${dark ? '#222' : '#ddd'}; border-radius: 2px; }
         textarea::placeholder { color: ${textMuted}; }
-        textarea { caret-color: ${textSecondary}; }
       `}</style>
 
       <div style={{
-        minHeight: '100dvh',
+        display: 'flex', height: '100dvh',
         background: bg,
-        color: textPrimary,
         fontFamily: '"FangSong","仿宋","STFangSong","Times New Roman",Georgia,serif',
-        display: 'flex',
-        flexDirection: 'column',
-        maxWidth: 820,
-        margin: '0 auto',
-        position: 'relative',
+        color: textPrimary,
       }}>
 
-        {/* Header */}
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 10,
-          background: bg,
-          borderBottom: `1px solid ${border}`,
-          padding: '14px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div>
-            <span style={{ fontSize: 16, letterSpacing: '0.1em', color: textPrimary }}>Coherence</span>
-            <span style={{ fontSize: 11, color: textMuted, marginLeft: 10, letterSpacing: '0.05em' }}>
-              连贯性，而非准确性
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={toggleTheme} style={{
-              background: 'none', border: `1px solid ${border}`,
-              color: textSecondary, borderRadius: 20,
-              padding: '4px 12px', fontSize: 11, cursor: 'pointer',
-              fontFamily: 'inherit', letterSpacing: '0.05em',
-            }}>
-              {dark ? '☀' : '☾'}
-            </button>
-            <Link href="/profile" style={{
-              background: 'none', border: `1px solid ${border}`,
-              color: textSecondary, borderRadius: 20,
-              padding: '4px 12px', fontSize: 11, cursor: 'pointer',
-              fontFamily: 'inherit', letterSpacing: '0.05em',
-              textDecoration: 'none', display: 'inline-block',
-            }}>
-              我的
-            </Link>
-          </div>
-        </div>
+        {/* Sidebar */}
+        <Sidebar dark={dark} toggleTheme={toggleTheme} />
 
-        {/* Messages */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '24px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 20,
-          paddingBottom: 120,
-        }}>
-          {!initialized && (
-            <div style={{
-              textAlign: 'center', color: textMuted,
-              fontSize: 20, marginTop: '40vh', letterSpacing: '0.4em',
-              animation: 'blink 1.8s ease-in-out infinite',
-            }}>· · ·</div>
-          )}
+        {/* Main */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
-          {messages.map((msg, i) => {
-            const isLast = i === messages.length - 1
-            const isStreaming = loading && isLast && msg.role === 'assistant'
+          {/* Chat area */}
+          <div style={{
+            flex: 1, overflowY: 'auto',
+            padding: '48px 0 160px',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <div style={{ maxWidth: 680, width: '100%', margin: '0 auto', padding: '0 32px' }}>
 
-            return (
-              <div key={i} style={{ animation: 'fadeIn 0.25s ease' }}>
-                {msg.role === 'user' ? (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <div style={{
-                      maxWidth: '78%',
-                      background: userBubble,
-                      color: userText,
-                      borderRadius: '18px 18px 4px 18px',
-                      padding: '11px 16px',
-                      fontSize: 15,
-                      lineHeight: 1.75,
-                      letterSpacing: '0.03em',
-                    }}>
-                      {msg.content}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <div style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: accent, marginTop: 10, flexShrink: 0,
-                    }} />
-                    <div style={{
-                      flex: 1,
-                      fontSize: 15,
-                      lineHeight: 1.85,
-                      letterSpacing: '0.04em',
-                      color: textPrimary,
-                      whiteSpace: 'pre-wrap',
-                    }}>
-                      {msg.content === '' && isStreaming ? (
-                        <span style={{
-                          display: 'inline-block', width: 2, height: 16,
-                          background: accent, verticalAlign: 'middle',
-                          animation: 'blink 1s step-end infinite',
-                        }} />
-                      ) : (
-                        <>
+              {!initialized && (
+                <div style={{
+                  textAlign: 'center', color: textMuted,
+                  fontSize: 20, marginTop: '40vh',
+                  letterSpacing: '0.4em',
+                  animation: 'blink 2s ease-in-out infinite',
+                }}>· · ·</div>
+              )}
+
+              {messages.map((msg, i) => {
+                const isLast = i === messages.length - 1
+                const isStreaming = loading && isLast && msg.role === 'assistant'
+
+                return (
+                  <div key={i} style={{
+                    marginBottom: 28,
+                    animation: 'fadeIn 0.2s ease',
+                  }}>
+                    {msg.role === 'user' ? (
+                      <div style={{
+                        display: 'flex', justifyContent: 'flex-end',
+                      }}>
+                        <div style={{
+                          maxWidth: '72%',
+                          background: userBubble,
+                          color: userText,
+                          borderRadius: '16px 16px 4px 16px',
+                          padding: '10px 16px',
+                          fontSize: 14,
+                          lineHeight: 1.8,
+                          letterSpacing: '0.04em',
+                        }}>
                           {msg.content}
-                          {isStreaming && (
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                        <div style={{
+                          width: 5, height: 5, borderRadius: '50%',
+                          background: accent, marginTop: 9, flexShrink: 0,
+                        }} />
+                        <div style={{
+                          flex: 1,
+                          fontSize: 15, lineHeight: 1.9,
+                          letterSpacing: '0.04em',
+                          color: textPrimary,
+                          whiteSpace: 'pre-wrap',
+                        }}>
+                          {msg.content === '' && isStreaming ? (
                             <span style={{
-                              display: 'inline-block', width: 2, height: 13,
-                              background: accent, verticalAlign: 'middle', marginLeft: 2,
+                              display: 'inline-block', width: 2, height: 16,
+                              background: accent, verticalAlign: 'middle',
                               animation: 'blink 1s step-end infinite',
                             }} />
+                          ) : (
+                            <>
+                              {msg.content}
+                              {isStreaming && (
+                                <span style={{
+                                  display: 'inline-block', width: 2, height: 13,
+                                  background: accent, verticalAlign: 'middle', marginLeft: 2,
+                                  animation: 'blink 1s step-end infinite',
+                                }} />
+                              )}
+                            </>
                           )}
-                        </>
-                      )}
-                    </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )
-          })}
-          <div ref={bottomRef} />
-        </div>
+                )
+              })}
+              <div ref={bottomRef} />
+            </div>
+          </div>
 
-        {/* Input — fixed at bottom */}
-        <div style={{
-          position: 'fixed', bottom: 0, left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%', maxWidth: 820,
-          background: bg,
-          borderTop: `1px solid ${border}`,
-          padding: '12px 16px 20px',
-        }}>
+          {/* Input */}
           <div style={{
-            display: 'flex', gap: 10, alignItems: 'flex-end',
-            background: surface,
-            borderRadius: 20,
-            padding: '8px 8px 8px 16px',
-            border: `1px solid ${border}`,
+            position: 'absolute',
+            bottom: 0,
+            left: 200,
+            right: 0,
+            padding: '16px 32px 28px',
+            background: bg,
+            borderTop: `1px solid ${border}`,
           }}>
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              placeholder="说点什么…"
-              value={input}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              disabled={loading || !initialized}
-              style={{
-                flex: 1, background: 'transparent', border: 'none',
-                color: textPrimary, fontSize: 15, lineHeight: 1.6,
-                letterSpacing: '0.03em', resize: 'none', outline: 'none',
-                fontFamily: 'inherit', overflow: 'hidden',
-                opacity: (!initialized || loading) ? 0.4 : 1,
-                transition: 'opacity 0.2s',
-                padding: '2px 0',
-                maxHeight: 140,
-              }}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={loading || !input.trim() || !initialized}
-              style={{
-                background: input.trim() && !loading ? textPrimary : 'transparent',
-                border: `1px solid ${input.trim() && !loading ? textPrimary : border}`,
-                color: input.trim() && !loading ? bg : textMuted,
-                borderRadius: 16,
-                width: 34, height: 34,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: input.trim() && !loading ? 'pointer' : 'default',
-                fontSize: 14, flexShrink: 0,
-                transition: 'all 0.2s',
-              }}
-            >
-              ↑
-            </button>
+            <div style={{ maxWidth: 680, margin: '0 auto' }}>
+              <div style={{
+                display: 'flex', gap: 10, alignItems: 'flex-end',
+                background: inputBg,
+                border: `1px solid ${border}`,
+                borderRadius: 14,
+                padding: '10px 10px 10px 16px',
+              }}>
+                <textarea
+                  ref={textareaRef}
+                  rows={1}
+                  placeholder="说点什么…"
+                  value={input}
+                  onChange={handleInput}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading || !initialized}
+                  style={{
+                    flex: 1, background: 'transparent', border: 'none',
+                    color: textPrimary, fontSize: 14, lineHeight: 1.7,
+                    letterSpacing: '0.04em', resize: 'none', outline: 'none',
+                    fontFamily: 'inherit', overflow: 'hidden',
+                    opacity: (!initialized || loading) ? 0.4 : 1,
+                    transition: 'opacity 0.2s',
+                    padding: '2px 0', maxHeight: 140,
+                  }}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={loading || !input.trim() || !initialized}
+                  style={{
+                    width: 32, height: 32, flexShrink: 0,
+                    background: input.trim() && !loading ? textPrimary : 'transparent',
+                    border: `1px solid ${input.trim() && !loading ? textPrimary : border}`,
+                    color: input.trim() && !loading ? bg : textMuted,
+                    borderRadius: 8, fontSize: 14,
+                    cursor: input.trim() && !loading ? 'pointer' : 'default',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s', fontFamily: 'inherit',
+                  }}
+                >↑</button>
+              </div>
+              <div style={{
+                fontSize: 10, color: dark ? '#222' : '#ddd',
+                marginTop: 8, textAlign: 'center', letterSpacing: '0.08em',
+              }}>
+                Enter 发送 · Shift+Enter 换行
+              </div>
+            </div>
           </div>
         </div>
       </div>
