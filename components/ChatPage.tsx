@@ -53,7 +53,7 @@ function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: ()
         textDecoration: 'none',
         color: isActive ? textActive : textMuted,
         background: isActive ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
-        fontSize: 13, letterSpacing: '0.04em',
+        fontSize: 15, letterSpacing: '0.04em',
         fontFamily: 'inherit',
         transition: 'all 0.15s',
       }}
@@ -68,7 +68,7 @@ function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: ()
 
   return (
     <div style={{
-      width: 240, flexShrink: 0,
+      width: 260, flexShrink: 0,
       background: bg,
       borderRight: `1px solid ${border}`,
       display: 'flex', flexDirection: 'column',
@@ -138,7 +138,7 @@ function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: ()
           display: 'flex', alignItems: 'center', gap: 10,
           width: '100%', padding: '8px 12px', borderRadius: 8,
           background: 'none', border: 'none',
-          color: textMuted, fontSize: 13,
+          color: textMuted, fontSize: 15,
           letterSpacing: '0.04em', cursor: 'pointer',
           fontFamily: 'inherit', transition: 'all 0.15s',
         }}
@@ -151,19 +151,28 @@ function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: ()
       </div>
 
       {/* Bottom — OUR MEMORIES */}
-      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+      <div style={{ paddingTop: 12 }}>
         <Link href="/profile" style={{
-          display: 'flex', alignItems: 'center',
-          padding: '8px 10px', borderRadius: 8,
+          display: 'block',
+          padding: '10px 12px',
           textDecoration: 'none',
-          color: pathname === '/profile' ? textActive : textMuted,
+          border: `1px solid ${pathname === '/profile' ? textActive : border}`,
+          borderRadius: 6,
+          color: textActive,
           background: pathname === '/profile' ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
           transition: 'all 0.15s',
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: 10, letterSpacing: '0.18em',
+          fontFamily: '"Bebas Neue", Impact, sans-serif',
+          fontSize: 22, letterSpacing: '0.08em',
+          lineHeight: 1,
         }}
-        onMouseEnter={e => { if (pathname !== '/profile') (e.currentTarget as HTMLElement).style.background = hoverBg }}
-        onMouseLeave={e => { if (pathname !== '/profile') (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.borderColor = textActive
+          if (pathname !== '/profile') (e.currentTarget as HTMLElement).style.background = hoverBg
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.borderColor = pathname === '/profile' ? textActive : border
+          if (pathname !== '/profile') (e.currentTarget as HTMLElement).style.background = 'transparent'
+        }}
         >
           OUR MEMORIES
         </Link>
@@ -389,7 +398,7 @@ export default function ChatPage() {
                           color: userText,
                           borderRadius: '16px 16px 4px 16px',
                           padding: '10px 16px',
-                          fontSize: 14,
+                          fontSize: 16,
                           lineHeight: 1.8,
                           letterSpacing: '0.04em',
                         }}>
@@ -404,7 +413,7 @@ export default function ChatPage() {
                         }} />
                         <div style={{
                           flex: 1,
-                          fontSize: 15, lineHeight: 1.9,
+                          fontSize: 17, lineHeight: 1.9,
                           letterSpacing: '0.04em',
                           color: textPrimary,
                           whiteSpace: 'pre-wrap',
@@ -441,7 +450,7 @@ export default function ChatPage() {
           <div style={{
             position: 'absolute',
             bottom: 0,
-            left: 240,
+            left: 260,
             right: 0,
             padding: '16px 32px 28px',
             background: bg,

@@ -36,7 +36,7 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
 
   return (
     <div style={{
-      width: 240, flexShrink: 0,
+      width: 260, flexShrink: 0,
       background: bg,
       borderRight: `1px solid ${border}`,
       display: 'flex', flexDirection: 'column',
@@ -68,16 +68,19 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
           <span>{dark ? '日间' : '夜间'}</span>
         </button>
       </div>
-      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
+      <div style={{ paddingTop: 12 }}>
         <Link href="/profile" style={{
-          display: 'flex', alignItems: 'center',
-          padding: '8px 10px', borderRadius: 8,
+          display: 'block',
+          padding: '10px 12px',
           textDecoration: 'none',
-          color: pathname === '/profile' ? textActive : textMuted,
+          border: `1px solid ${pathname === '/profile' ? textActive : border}`,
+          borderRadius: 6,
+          color: textActive,
           background: pathname === '/profile' ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
           transition: 'all 0.15s',
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: 10, letterSpacing: '0.18em',
+          fontFamily: '"Bebas Neue", Impact, sans-serif',
+          fontSize: 22, letterSpacing: '0.08em',
+          lineHeight: 1,
         }}>
           OUR MEMORIES
         </Link>
