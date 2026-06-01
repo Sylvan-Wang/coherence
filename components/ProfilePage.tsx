@@ -36,7 +36,7 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
 
   return (
     <div style={{
-      width: 200, flexShrink: 0,
+      width: 240, flexShrink: 0,
       background: bg,
       borderRight: `1px solid ${border}`,
       display: 'flex', flexDirection: 'column',
@@ -44,9 +44,13 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
       height: '100vh',
       position: 'sticky', top: 0,
     }}>
-      <div style={{ padding: '4px 12px 20px', borderBottom: `1px solid ${border}`, marginBottom: 12 }}>
-        <div style={{ fontSize: 14, letterSpacing: '0.12em', color: textActive, fontWeight: 400 }}>Coherence</div>
-        <div style={{ fontSize: 10, color: textMuted, marginTop: 3, letterSpacing: '0.06em' }}>连贯性，而非准确性</div>
+      <div style={{ padding: '4px 10px 20px', borderBottom: `1px solid ${border}`, marginBottom: 12 }}>
+        <div style={{
+          fontFamily: '"Bebas Neue", Impact, sans-serif',
+          fontSize: 32, letterSpacing: '0.06em',
+          color: textActive, lineHeight: 1,
+        }}>COHERENCE</div>
+        <div style={{ fontSize: 10, color: textMuted, marginTop: 5, letterSpacing: '0.12em', fontFamily: 'system-ui, sans-serif' }}>连贯性，而非准确性</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
         {navItem('/', '对话', '○')}
@@ -65,7 +69,18 @@ function Sidebar({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void
         </button>
       </div>
       <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
-        {navItem('/profile', '我的', '◇')}
+        <Link href="/profile" style={{
+          display: 'flex', alignItems: 'center',
+          padding: '8px 10px', borderRadius: 8,
+          textDecoration: 'none',
+          color: pathname === '/profile' ? textActive : textMuted,
+          background: pathname === '/profile' ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
+          transition: 'all 0.15s',
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: 10, letterSpacing: '0.18em',
+        }}>
+          OUR MEMORIES
+        </Link>
       </div>
     </div>
   )

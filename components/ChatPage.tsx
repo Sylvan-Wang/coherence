@@ -68,20 +68,24 @@ function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: ()
 
   return (
     <div style={{
-      width: 200, flexShrink: 0,
+      width: 240, flexShrink: 0,
       background: bg,
       borderRight: `1px solid ${border}`,
       display: 'flex', flexDirection: 'column',
-      padding: '20px 12px',
+      padding: '20px 14px',
       height: '100vh',
       position: 'sticky', top: 0,
     }}>
       {/* Logo */}
-      <div style={{ padding: '4px 12px 20px', borderBottom: `1px solid ${border}`, marginBottom: 12 }}>
-        <div style={{ fontSize: 14, letterSpacing: '0.12em', color: textActive, fontWeight: 400 }}>
-          Coherence
+      <div style={{ padding: '4px 10px 20px', borderBottom: `1px solid ${border}`, marginBottom: 12 }}>
+        <div style={{
+          fontFamily: '"Bebas Neue", Impact, sans-serif',
+          fontSize: 32, letterSpacing: '0.06em',
+          color: textActive, lineHeight: 1,
+        }}>
+          COHERENCE
         </div>
-        <div style={{ fontSize: 10, color: textMuted, marginTop: 3, letterSpacing: '0.06em' }}>
+        <div style={{ fontSize: 10, color: textMuted, marginTop: 5, letterSpacing: '0.12em', fontFamily: 'system-ui, sans-serif' }}>
           连贯性，而非准确性
         </div>
       </div>
@@ -146,9 +150,23 @@ function Sidebar({ dark, toggleTheme, userId }: { dark: boolean; toggleTheme: ()
         </button>
       </div>
 
-      {/* Bottom — 我的 */}
+      {/* Bottom — OUR MEMORIES */}
       <div style={{ borderTop: `1px solid ${border}`, paddingTop: 12 }}>
-        {navItem('/profile', '我的', '◇')}
+        <Link href="/profile" style={{
+          display: 'flex', alignItems: 'center',
+          padding: '8px 10px', borderRadius: 8,
+          textDecoration: 'none',
+          color: pathname === '/profile' ? textActive : textMuted,
+          background: pathname === '/profile' ? (dark ? '#1a1a1a' : '#ebebeb') : 'transparent',
+          transition: 'all 0.15s',
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: 10, letterSpacing: '0.18em',
+        }}
+        onMouseEnter={e => { if (pathname !== '/profile') (e.currentTarget as HTMLElement).style.background = hoverBg }}
+        onMouseLeave={e => { if (pathname !== '/profile') (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+        >
+          OUR MEMORIES
+        </Link>
       </div>
     </div>
   )
@@ -423,7 +441,7 @@ export default function ChatPage() {
           <div style={{
             position: 'absolute',
             bottom: 0,
-            left: 200,
+            left: 240,
             right: 0,
             padding: '16px 32px 28px',
             background: bg,
