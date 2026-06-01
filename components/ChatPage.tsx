@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 type Message = {
@@ -23,6 +23,32 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
+    const readStreamInline = async (body: ReadableStream) => {
+      const reader = body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6)
+          if (data === '[DONE]') return
+          try {
+            const { text } = JSON.parse(data)
+            if (text) setMessages(prev => {
+              const u = [...prev]
+              u[u.length - 1] = { ...u[u.length - 1], content: u[u.length - 1].content + text }
+              return u
+            })
+          } catch {}
+        }
+      }
+    }
+
     const init = async () => {
       const storedUserId = localStorage.getItem('coherence_user_id')
       const validId = storedUserId && storedUserId !== 'undefined' && storedUserId !== 'null'
@@ -38,11 +64,28 @@ export default function ChatPage() {
         setUserId(data.user_id)
         setSessionId(data.session_id)
         setInitialized(true)
-        streamAIGreeting(data.user_id, data.session_id, [])
+        // 触发开场白
+        setLoading(true)
+        setMessages([{ role: 'assistant', content: '' }])
+        try {
+          const chatRes = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: data.user_id,
+              session_id: data.session_id,
+              messages: [{ role: 'user', content: '（开始对话）' }],
+            }),
+          })
+          if (chatRes.body) await readStreamInline(chatRes.body)
+        } finally {
+          setLoading(false)
+        }
       }
     }
     init()
-  }, [streamAIGreeting])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -54,7 +97,7 @@ export default function ChatPage() {
     localStorage.setItem('coherence_theme', next ? 'dark' : 'light')
   }
 
-  const readStream = useCallback(async (body: ReadableStream) => {
+  const readStream = async (body: ReadableStream) => {
     const reader = body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
@@ -78,26 +121,7 @@ export default function ChatPage() {
         } catch {}
       }
     }
-  }, [])
-
-  const streamAIGreeting = useCallback(async (uid: string, sid: string, history: Message[]) => {
-    setLoading(true)
-    const assistantMsg: Message = { role: 'assistant', content: '' }
-    setMessages(prev => [...prev, assistantMsg])
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: uid, session_id: sid,
-          messages: history.length > 0 ? history : [{ role: 'user', content: '（开始对话）' }],
-        }),
-      })
-      if (res.body) await readStream(res.body)
-    } finally {
-      setLoading(false)
-    }
-  }, [readStream])
+  }
 
   const sendMessage = async () => {
     if (!input.trim() || loading || !userId || !sessionId) return

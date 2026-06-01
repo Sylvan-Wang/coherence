@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 type UserProfile = {
@@ -66,11 +66,10 @@ export default function ProfilePage() {
   const surface = dark ? '#181818' : '#f7f7f7'
   const accent = dark ? '#6b6b6b' : '#999999'
 
-  const now = useMemo(() => Date.now(), [])
-  const daysSince = useCallback((dateStr: string) => {
+  const daysSince = (dateStr: string) => {
     if (!dateStr) return 0
-    return Math.floor((now - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
-  }, [now])
+    return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+  }
 
   return (
     <>
